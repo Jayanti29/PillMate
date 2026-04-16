@@ -1,0 +1,89 @@
+{
+  "medicines": [
+    {
+      "id": 1,
+      "name": "Paracetamol",
+      "type": "Tablet",
+      "dosage": "500mg",
+      "frequency": "Twice daily",
+      "times": ["08:00", "20:00"],
+      "pillsLeft": 7,
+      "refillThreshold": 10,
+      "priority": "High",
+      "color": "#a8edea",
+      "takenToday": [true, false],
+      "addedDate": "2025-01-01"
+    },
+    {
+      "id": 2,
+      "name": "Vitamin D3",
+      "type": "Capsule",
+      "dosage": "1000IU",
+      "frequency": "Once daily",
+      "times": ["09:00"],
+      "pillsLeft": 45,
+      "refillThreshold": 10,
+      "priority": "Low",
+      "color": "#ffecd2",
+      "takenToday": [false],
+      "addedDate": "2025-01-05"
+    },
+    {
+      "id": 3,
+      "name": "Metformin",
+      "type": "Tablet",
+      "dosage": "500mg",
+      "frequency": "Three times daily",
+      "times": ["07:00", "13:00", "19:00"],
+      "pillsLeft": 5,
+      "refillThreshold": 15,
+      "priority": "Critical",
+      "color": "#fbc2eb",
+      "takenToday": [false, false, false],
+      "addedDate": "2025-01-10"
+    },
+    {
+      "id": 4,
+      "name": "Omega-3",
+      "type": "Softgel",
+      "dosage": "1000mg",
+      "frequency": "Once daily",
+      "times": ["12:00"],
+      "pillsLeft": 30,
+      "refillThreshold": 7,
+      "priority": "Low",
+      "color": "#d4fc79",
+      "takenToday": [false],
+      "addedDate": "2025-01-12"
+    },
+    {
+      "id": 5,
+      "name": "Lisinopril",
+      "type": "Tablet",
+      "dosage": "10mg",
+      "frequency": "Once daily",
+      "times": ["08:00"],
+      "pillsLeft": 3,
+      "refillThreshold": 7,
+      "priority": "Critical",
+      "color": "#a1c4fd",
+      "takenToday": [false],
+      "addedDate": "2025-01-15"
+    },
+    {
+      "id": 6,
+      "name": "Aspirin",
+      "type": "Tablet",
+      "dosage": "75mg",
+      "frequency": "Twice daily",
+      "times": ["07:30", "19:30"],
+      "pillsLeft": 20,
+      "refillThreshold": 10,
+      "priority": "Medium",
+      "color": "#c3f0ca",
+      "takenToday": [false, false],
+      "addedDate": "2026-04-14"
+    }
+  ],
+  "lastUpdated": "2026-04-14T13:36:58Z"
+}

@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PillMate 💊 Medicine Reminder</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --mint:#e8f8f5; --mint-mid:#b2ebdf; --mint-deep:#4ecdc4;
+    --sky:#e8f4fd; --sky-mid:#aed9f5; --sky-deep:#5bafd6;
+    --blush:#fde8f0; --blush-mid:#f5b8d2; --blush-deep:#e86b9f;
+    --peach:#fff3e8; --peach-mid:#ffd4a8; --peach-deep:#f4934a;
+    --lavender:#f0ebff; --lav-mid:#cbbfff; --lav-deep:#7c5cbf;
+    --cream:#fdfaf5; --white:#ffffff;
+    --text-dark:#2c3e50; --text-mid:#5a7080; --text-soft:#8fa8b5;
+    --border:#e8eef2;
+    --shadow-sm:0 2px 8px rgba(44,62,80,.06);
+    --shadow-md:0 4px 20px rgba(44,62,80,.1);
+    --shadow-lg:0 8px 40px rgba(44,62,80,.14);
+    --radius-sm:10px; --radius-md:16px; --radius-lg:24px;
+  }
+  body { font-family:'DM Sans',sans-serif; background:#f5f8fb; color:var(--text-dark); min-height:100vh; overflow-x:hidden; }
+
+  /* LOGIN */
+  .login-page { min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#e8f8f5,#e8f4fd 50%,#fde8f0); padding:20px; position:relative; overflow:hidden; }
+  .login-page::before { content:''; position:absolute; width:600px; height:600px; border-radius:50%; background:radial-gradient(circle,rgba(78,205,196,.15),transparent 70%); top:-200px; right:-200px; pointer-events:none; }
+  .login-page::after  { content:''; position:absolute; width:400px; height:400px; border-radius:50%; background:radial-gradient(circle,rgba(232,107,159,.1),transparent 70%); bottom:-100px; left:-100px; pointer-events:none; }
+  .login-card { background:var(--white); border-radius:28px; padding:48px 44px; box-shadow:0 20px 60px rgba(44,62,80,.15); width:100%; max-width:420px; position:relative; z-index:1; animation:loginFadeIn .5s ease; }
+  @keyframes loginFadeIn { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+  .login-logo { text-align:center; margin-bottom:32px; }
+  .login-logo-icon { font-size:56px; display:block; margin-bottom:10px; animation:pillBounce 2s ease infinite; }
+  @keyframes pillBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+  .login-logo h1 { font-family:'Playfair Display',serif; font-size:30px; font-weight:600; color:var(--text-dark); }
+  .login-logo p { font-size:13px; color:var(--text-soft); margin-top:4px; letter-spacing:.5px; }
+  .login-tabs { display:flex; background:var(--cream); border-radius:12px; padding:4px; margin-bottom:28px; }
+  .login-tab { flex:1; padding:9px; border-radius:9px; text-align:center; font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; color:var(--text-soft); }
+  .login-tab.active { background:var(--white); color:var(--mint-deep); box-shadow:var(--shadow-sm); }
+  .login-field { margin-bottom:16px; }
+  .login-field label { display:block; font-size:12px; font-weight:600; color:var(--text-mid); text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
+  .login-input { width:100%; padding:12px 16px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:14px; color:var(--text-dark); font-family:'DM Sans',sans-serif; background:var(--white); transition:border-color .2s,box-shadow .2s; outline:none; }
+  .login-input:focus { border-color:var(--mint-deep); box-shadow:0 0 0 3px rgba(78,205,196,.12); }
+  .login-btn { width:100%; padding:14px; background:linear-gradient(135deg,var(--mint-deep),var(--sky-deep)); color:white; border:none; border-radius:var(--radius-sm); font-size:15px; font-weight:700; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all .2s; margin-top:8px; }
+  .login-btn:hover { opacity:.9; transform:translateY(-1px); box-shadow:0 8px 20px rgba(78,205,196,.35); }
+  .login-error { background:#fde8e8; color:#e53e3e; border-radius:10px; padding:10px 14px; font-size:13px; font-weight:500; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+  .login-hint { text-align:center; font-size:12px; color:var(--text-soft); margin-top:20px; background:var(--cream); border-radius:10px; padding:10px; }
+  .login-hint strong { color:var(--mint-deep); }
+
+  /* LAYOUT */
+  .app-shell { display:flex; min-height:100vh; }
+  .sidebar { width:260px; min-height:100vh; background:var(--white); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:28px 0; position:fixed; top:0; left:0; bottom:0; box-shadow:var(--shadow-sm); z-index:100; transition:transform .3s ease; }
+  .sidebar-logo { padding:0 24px 28px; border-bottom:1px solid var(--border); margin-bottom:16px; }
+  .sidebar-logo h1 { font-family:'Playfair Display',serif; font-size:22px; font-weight:600; color:var(--text-dark); display:flex; align-items:center; gap:8px; }
+  .sidebar-logo span { font-size:26px; }
+  .sidebar-logo p { font-size:11px; color:var(--text-soft); margin-top:3px; letter-spacing:.5px; text-transform:uppercase; }
+  .nav-item { display:flex; align-items:center; gap:12px; padding:12px 24px; cursor:pointer; transition:all .2s; border-left:3px solid transparent; color:var(--text-mid); font-size:14px; font-weight:500; margin:2px 0; }
+  .nav-item:hover { background:var(--cream); color:var(--text-dark); }
+  .nav-item.active { background:var(--mint); color:var(--mint-deep); border-left-color:var(--mint-deep); font-weight:600; }
+  .nav-icon { font-size:18px; width:24px; text-align:center; }
+  .sidebar-bottom { margin-top:auto; padding:16px 24px; border-top:1px solid var(--border); }
+  .sidebar-user { display:flex; align-items:center; gap:10px; margin-bottom:14px; background:var(--cream); border-radius:12px; padding:10px 12px; }
+  .sidebar-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--mint-deep),var(--sky-deep)); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:white; flex-shrink:0; }
+  .sidebar-username { font-size:13px; font-weight:600; color:var(--text-dark); }
+  .sidebar-logout { font-size:11px; color:var(--blush-deep); cursor:pointer; background:none; border:none; font-family:'DM Sans',sans-serif; padding:0; font-weight:500; }
+  .sidebar-logout:hover { text-decoration:underline; }
+  .sidebar-time { font-size:28px; font-weight:700; color:var(--text-dark); letter-spacing:-1px; }
+  .sidebar-date { font-size:12px; color:var(--text-soft); margin-top:2px; }
+  .main-content { margin-left:260px; flex:1; padding:32px; max-width:calc(100vw - 260px); }
+  .page-header { margin-bottom:28px; }
+  .page-header h2 { font-family:'Playfair Display',serif; font-size:28px; font-weight:600; color:var(--text-dark); }
+  .page-header p { color:var(--text-soft); font-size:14px; margin-top:4px; }
+
+  /* CARDS */
+  .card { background:var(--white); border-radius:var(--radius-md); padding:20px; box-shadow:var(--shadow-sm); border:1px solid var(--border); transition:box-shadow .2s,transform .2s; }
+  .card:hover { box-shadow:var(--shadow-md); transform:translateY(-1px); }
+  .stat-card { padding:24px; border-radius:var(--radius-md); position:relative; overflow:hidden; transition:transform .2s,box-shadow .2s; }
+  .stat-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
+  .stat-card-icon { font-size:32px; margin-bottom:12px; }
+  .stat-card-value { font-size:36px; font-weight:700; line-height:1; color:var(--text-dark); }
+  .stat-card-label { font-size:13px; color:var(--text-mid); margin-top:6px; font-weight:500; }
+  .stat-card-blob { position:absolute; right:-20px; top:-20px; width:100px; height:100px; border-radius:50%; opacity:.12; }
+  .grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+  .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+
+  /* MED CARDS */
+  .med-card { background:var(--white); border-radius:var(--radius-md); padding:20px; box-shadow:var(--shadow-sm); border:1px solid var(--border); transition:all .2s; position:relative; overflow:hidden; }
+  .med-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+  .med-card-accent { position:absolute; top:0; left:0; right:0; height:4px; border-radius:var(--radius-md) var(--radius-md) 0 0; }
+  .med-card-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px; }
+  .med-card-name { font-size:16px; font-weight:600; color:var(--text-dark); }
+  .med-card-type { font-size:12px; color:var(--text-soft); margin-top:2px; }
+  .badge { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; letter-spacing:.3px; text-transform:uppercase; }
+  .badge-critical { background:#fde8e8; color:#e53e3e; }
+  .badge-high { background:#fff3cd; color:#d69e2e; }
+  .badge-medium { background:#e8f4fd; color:#3182ce; }
+  .badge-low { background:var(--mint); color:var(--mint-deep); }
+  .med-info-row { display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+  .med-info-chip { background:var(--cream); border-radius:8px; padding:4px 10px; font-size:12px; color:var(--text-mid); font-weight:500; }
+  .pill-bar-wrap { margin-top:14px; }
+  .pill-bar-label { display:flex; justify-content:space-between; font-size:12px; color:var(--text-mid); margin-bottom:6px; }
+  .pill-bar-bg { height:6px; background:var(--border); border-radius:10px; overflow:hidden; }
+  .pill-bar-fill { height:100%; border-radius:10px; transition:width .5s ease; }
+  .med-times { display:flex; gap:6px; margin-top:12px; flex-wrap:wrap; }
+  .time-chip { background:var(--sky); color:var(--sky-deep); border-radius:8px; padding:4px 10px; font-size:12px; font-weight:600; display:flex; align-items:center; gap:4px; }
+  .med-card-actions { display:flex; gap:8px; margin-top:14px; }
+
+  /* BUTTONS */
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:var(--radius-sm); font-size:13px; font-weight:600; cursor:pointer; border:none; transition:all .2s; font-family:'DM Sans',sans-serif; }
+  .btn:hover { opacity:.85; transform:translateY(-1px); }
+  .btn:active { transform:translateY(0); }
+  .btn-mint { background:var(--mint); color:var(--mint-deep); }
+  .btn-solid-mint { background:var(--mint-deep); color:white; box-shadow:0 4px 12px rgba(78,205,196,.3); }
+  .btn-solid-sky  { background:var(--sky-deep);  color:white; box-shadow:0 4px 12px rgba(91,175,214,.3); }
+  .btn-solid-lav  { background:var(--lav-deep);  color:white; box-shadow:0 4px 12px rgba(124,92,191,.3); }
+  .btn-ghost { background:transparent; color:var(--text-soft); border:1px solid var(--border); }
+  .btn-icon { padding:8px; border-radius:8px; background:var(--cream); color:var(--text-mid); border:none; cursor:pointer; font-size:16px; transition:all .2s; }
+  .btn-icon:hover { background:var(--border); }
+  .btn-sm { padding:6px 12px; font-size:12px; }
+
+  /* FORMS */
+  .form-group { margin-bottom:18px; }
+  .form-label { display:block; font-size:13px; font-weight:600; color:var(--text-mid); margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px; }
+  .form-input { width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:14px; color:var(--text-dark); font-family:'DM Sans',sans-serif; background:var(--white); transition:border-color .2s,box-shadow .2s; outline:none; }
+  .form-input:focus { border-color:var(--mint-deep); box-shadow:0 0 0 3px rgba(78,205,196,.12); }
+  select.form-input { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238fa8b5' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+  /* TIMELINE */
+  .timeline-section { background:var(--white); border-radius:var(--radius-md); overflow:hidden; box-shadow:var(--shadow-sm); border:1px solid var(--border); margin-bottom:16px; }
+  .timeline-header { padding:16px 20px; font-weight:600; font-size:15px; display:flex; align-items:center; gap:10px; }
+  .timeline-item { display:flex; align-items:center; padding:14px 20px; border-top:1px solid var(--border); gap:14px; transition:background .2s; }
+  .timeline-item:hover { background:var(--cream); }
+  .timeline-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+  .timeline-info { flex:1; }
+  .timeline-name { font-size:14px; font-weight:600; }
+  .timeline-detail { font-size:12px; color:var(--text-soft); margin-top:2px; }
+  .timeline-time { font-size:13px; font-weight:700; color:var(--text-mid); min-width:48px; text-align:right; }
+  .status-badge { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.3px; }
+  .status-taken   { background:var(--mint); color:var(--mint-deep); }
+  .status-pending { background:var(--sky);  color:var(--sky-deep); }
+  .status-missed  { background:#fde8e8; color:#e53e3e; }
+
+  /* ALERTS */
+  .alert-card { background:var(--white); border-radius:var(--radius-md); padding:18px 20px; box-shadow:var(--shadow-sm); border:1px solid var(--border); display:flex; align-items:center; gap:16px; transition:all .2s; }
+  .alert-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+  .alert-card.urgent { border-color:#fca5a5; background:linear-gradient(135deg,#fff5f5,var(--white)); }
+  .alert-icon { font-size:32px; }
+  .alert-info { flex:1; }
+  .alert-name { font-size:15px; font-weight:600; }
+  .alert-detail { font-size:13px; color:var(--text-soft); margin-top:3px; }
+  .alert-pills { font-size:24px; font-weight:700; text-align:center; line-height:1; }
+  .alert-pills-label { font-size:11px; color:var(--text-soft); text-align:center; }
+
+  /* NOTIFICATIONS */
+  .notif-container { position:fixed; top:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:10px; pointer-events:none; }
+  .notif { pointer-events:all; background:var(--white); border-radius:var(--radius-md); padding:14px 18px; box-shadow:var(--shadow-lg); border:1px solid var(--border); max-width:340px; min-width:280px; display:flex; gap:12px; align-items:flex-start; animation:slideIn .35s cubic-bezier(.34,1.56,.64,1); border-left:4px solid var(--mint-deep); }
+  .notif.notif-warning { border-left-color:var(--peach-deep); }
+  .notif.notif-danger  { border-left-color:var(--blush-deep); }
+  .notif.notif-info    { border-left-color:var(--sky-deep); }
+  .notif.notif-exit    { animation:slideOut .3s ease forwards; }
+  .notif-emoji { font-size:22px; flex-shrink:0; line-height:1.2; }
+  .notif-body { flex:1; }
+  .notif-title { font-size:13px; font-weight:700; color:var(--text-dark); }
+  .notif-msg { font-size:12px; color:var(--text-mid); margin-top:2px; }
+  .notif-close { background:none; border:none; cursor:pointer; color:var(--text-soft); font-size:16px; line-height:1; padding:0; flex-shrink:0; }
+  .notif-close:hover { color:var(--text-dark); }
+  @keyframes slideIn { from{opacity:0;transform:translateX(120%)} to{opacity:1;transform:translateX(0)} }
+  @keyframes slideOut { from{opacity:1;transform:translateX(0);max-height:200px} to{opacity:0;transform:translateX(120%);max-height:0;margin-bottom:-10px} }
+
+  /* PROGRESS */
+  .progress-ring text { font-family:'DM Sans',sans-serif; }
+
+  /* GREETING */
+  .greeting-card { background:linear-gradient(135deg,var(--mint),var(--sky)); border-radius:var(--radius-lg); padding:28px 32px; margin-bottom:24px; position:relative; overflow:hidden; border:1px solid var(--mint-mid); }
+  .greeting-card::after { content:'💊'; position:absolute; right:24px; top:50%; transform:translateY(-50%); font-size:64px; opacity:.25; }
+  .greeting-text h2 { font-family:'Playfair Display',serif; font-size:26px; font-weight:600; color:var(--text-dark); }
+  .greeting-text p { color:var(--text-mid); margin-top:6px; font-size:15px; }
+
+  /* MISC */
+  .section-title { font-size:16px; font-weight:700; color:var(--text-dark); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .empty-state { text-align:center; padding:40px 20px; color:var(--text-soft); }
+  .empty-state-icon { font-size:48px; margin-bottom:12px; }
+  .empty-state p { font-size:14px; }
+
+  /* HEALTH ASSESSMENT */
+  .health-page { max-width:720px; }
+  .health-step { animation:fadeUp .3s ease; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  .health-option { display:flex; align-items:center; gap:12px; padding:14px 18px; border:1.5px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:all .2s; margin-bottom:8px; background:var(--white); }
+  .health-option:hover { border-color:var(--mint-deep); background:var(--mint); }
+  .health-option.selected { border-color:var(--mint-deep); background:var(--mint); font-weight:600; color:var(--mint-deep); }
+  .health-option-emoji { font-size:20px; }
+  .progress-steps { display:flex; gap:6px; margin-bottom:24px; }
+  .step-dot { height:4px; border-radius:2px; flex:1; background:var(--border); transition:background .3s; }
+  .step-dot.done { background:var(--mint-deep); }
+
+  /* AI CHAT */
+  .ai-page { display:flex; flex-direction:column; height:calc(100vh - 200px); min-height:400px; }
+  .ai-messages { flex:1; overflow-y:auto; padding:4px 0 16px; display:flex; flex-direction:column; gap:12px; }
+  .ai-msg { display:flex; gap:10px; align-items:flex-start; animation:fadeUp .25s ease; }
+  .ai-msg.user { flex-direction:row-reverse; }
+  .ai-bubble { max-width:75%; padding:12px 16px; border-radius:16px; font-size:14px; line-height:1.6; }
+  .ai-msg.user .ai-bubble { background:linear-gradient(135deg,var(--mint-deep),var(--sky-deep)); color:white; border-bottom-right-radius:4px; }
+  .ai-msg.bot  .ai-bubble { background:var(--white); border:1px solid var(--border); color:var(--text-dark); border-bottom-left-radius:4px; box-shadow:var(--shadow-sm); }
+  .ai-avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; background:linear-gradient(135deg,var(--mint-deep),var(--sky-deep)); }
+  .ai-user-avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--lav-deep),var(--blush-deep)); display:flex; align-items:center; justify-content:center; font-size:12px; color:white; font-weight:700; flex-shrink:0; }
+  .ai-input-row { display:flex; gap:10px; align-items:flex-end; padding-top:12px; border-top:1px solid var(--border); }
+  .ai-input { flex:1; padding:12px 16px; border:1.5px solid var(--border); border-radius:12px; font-size:14px; font-family:'DM Sans',sans-serif; outline:none; resize:none; min-height:48px; max-height:120px; transition:border-color .2s; }
+  .ai-input:focus { border-color:var(--mint-deep); }
+  .ai-send-btn { width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg,var(--mint-deep),var(--sky-deep)); border:none; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; transition:all .2s; color:white; flex-shrink:0; }
+  .ai-send-btn:hover { opacity:.85; transform:scale(1.05); }
+  .ai-send-btn:disabled { opacity:.5; cursor:not-allowed; }
+  .ai-typing { display:flex; gap:4px; align-items:center; padding:4px 0; }
+  .ai-typing span { width:7px; height:7px; border-radius:50%; background:var(--text-soft); animation:typingDot 1.2s infinite; }
+  .ai-typing span:nth-child(2) { animation-delay:.2s; }
+  .ai-typing span:nth-child(3) { animation-delay:.4s; }
+  @keyframes typingDot { 0%,80%,100%{transform:scale(.6);opacity:.4} 40%{transform:scale(1);opacity:1} }
+  .quick-q-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .quick-q { background:var(--lavender); color:var(--lav-deep); border-radius:20px; padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer; border:none; font-family:'DM Sans',sans-serif; transition:all .2s; }
+  .quick-q:hover { background:var(--lav-deep); color:white; }
+
+  /* MOBILE */
+  .hamburger { display:none; position:fixed; top:16px; left:16px; z-index:200; background:var(--white); border:1px solid var(--border); border-radius:10px; padding:8px 10px; cursor:pointer; font-size:18px; box-shadow:var(--shadow-sm); }
+  .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.3); z-index:99; }
+  @media (max-width:900px) { .grid-4{grid-template-columns:repeat(2,1fr)} .grid-3{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:700px) {
+    .sidebar{transform:translateX(-100%)} .sidebar.open{transform:translateX(0)}
+    .sidebar-overlay.open{display:block} .hamburger{display:block}
+    .main-content{margin-left:0;padding:20px 16px;max-width:100vw;padding-top:64px}
+    .grid-4,.grid-3,.grid-2{grid-template-columns:1fr} .form-row{grid-template-columns:1fr}
+    .greeting-card::after{display:none} .login-card{padding:32px 24px}
+  }
+  @media (max-width:480px) { .notif{min-width:240px;max-width:calc(100vw - 40px)} }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+
+const INITIAL_MEDICINES = [
+  { id:1, name:"Paracetamol", type:"Tablet",  dosage:"500mg",   frequency:"Twice daily",      times:["08:00","20:00"],         pillsLeft:7,  refillThreshold:10, priority:"High",     color:"#4ecdc4", takenToday:[true,false],       addedDate:"2025-01-01" },
+  { id:2, name:"Vitamin D3",  type:"Capsule", dosage:"1000IU",  frequency:"Once daily",        times:["09:00"],                 pillsLeft:45, refillThreshold:10, priority:"Low",      color:"#f4934a", takenToday:[false],            addedDate:"2025-01-05" },
+  { id:3, name:"Metformin",   type:"Tablet",  dosage:"500mg",   frequency:"Three times daily", times:["07:00","13:00","19:00"], pillsLeft:5,  refillThreshold:15, priority:"Critical", color:"#e86b9f", takenToday:[false,false,false], addedDate:"2025-01-10" },
+  { id:4, name:"Omega-3",     type:"Softgel", dosage:"1000mg",  frequency:"Once daily",        times:["12:00"],                 pillsLeft:30, refillThreshold:7,  priority:"Low",      color:"#7bc67e", takenToday:[false],            addedDate:"2025-01-12" },
+  { id:5, name:"Lisinopril",  type:"Tablet",  dosage:"10mg",    frequency:"Once daily",        times:["08:00"],                 pillsLeft:3,  refillThreshold:7,  priority:"Critical", color:"#5bafd6", takenToday:[false],            addedDate:"2025-01-15" },
+  { id:6, name:"Aspirin",     type:"Tablet",  dosage:"75mg",    frequency:"Twice daily",       times:["07:30","19:30"],         pillsLeft:20, refillThreshold:10, priority:"Medium",   color:"#a78bfa", takenToday:[false,false],      addedDate:"2026-04-14" },
+];
+
+const DEMO_ACCOUNTS = [
+  { username:"demo",  password:"demo123",  name:"Demo User" },
+  { username:"admin", password:"admin123", name:"Admin" },
+];
+
+/* Sound effects using Web Audio API */
+function playSound(type) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    if (type === 'success') {
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5);
+    } else if (type === 'warning') {
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      osc.frequency.setValueAtTime(380, ctx.currentTime + 0.15);
+      osc.frequency.setValueAtTime(440, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.6);
+    } else if (type === 'danger') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(300, ctx.currentTime);
+      osc.frequency.setValueAtTime(250, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4);
+    } else {
+      osc.frequency.setValueAtTime(600, ctx.currentTime);
+      osc.frequency.setValueAtTime(700, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.14, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.35);
+    }
+  } catch(e) {}
+}
+
+/* Helpers */
+function getGreeting() {
+  const h = new Date().getHours();
+  return h < 12 ? "Good Morning 🌸" : h < 17 ? "Good Afternoon ☀️" : "Good Evening 🌙";
+}
+function formatTime(t) {
+  if (!t) return "";
+  const [h, m] = t.split(":").map(Number);
+  return `${h % 12 || 12}:${String(m).padStart(2,"0")} ${h >= 12 ? "PM" : "AM"}`;
+}
+function getTimeSlot(time) {
+  const h = parseInt(time);
+  return h < 12 ? "Morning" : h < 17 ? "Afternoon" : "Night";
+}
+function getPillBarColor(left, threshold) {
+  if (left === 0) return "#ef4444";
+  if (left <= threshold) return "#f97316";
+  if (left <= threshold * 2) return "#eab308";
+  return "#4ecdc4";
+}
+function getCurrentTimeStr() {
+  const n = new Date();
+  return `${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`;
+}
+function isTimePassed(t) {
+  const [th, tm] = t.split(":").map(Number);
+  const now = new Date();
+  return now.getHours() > th || (now.getHours() === th && now.getMinutes() > tm + 5);
+}
+function isTimeSoon(t, w=2) {
+  const [th,tm] = t.split(":").map(Number);
+  const now = new Date();
+  const diff = (th*60+tm) - (now.getHours()*60+now.getMinutes());
+  return diff >= 0 && diff <= w;
+}
+
+/* ── LOGIN ── */
+function LoginPage({ onLogin }) {
+  const [tab, setTab] = useState("login");
+  const [form, setForm] = useState({ username:"", password:"", name:"", confirm:"" });
+  const [error, setError] = useState("");
+  const [users, setUsers] = useState(DEMO_ACCOUNTS);
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+
+  const handleLogin = () => {
+    setError("");
+    if (!form.username || !form.password) { setError("Please fill in all fields."); return; }
+    const user = users.find(u => u.username === form.username && u.password === form.password);
+    if (!user) { setError("Invalid username or password."); return; }
+    onLogin(user);
+  };
+  const handleRegister = () => {
+    setError("");
+    if (!form.username || !form.password || !form.name) { setError("Please fill all fields."); return; }
+    if (form.password !== form.confirm) { setError("Passwords don't match."); return; }
+    if (form.password.length < 6) { setError("Password must be at least 6 characters."); return; }
+    if (users.find(u => u.username === form.username)) { setError("Username already exists."); return; }
+    const newUser = { username:form.username, password:form.password, name:form.name };
+    setUsers(prev => [...prev, newUser]);
+    onLogin(newUser);
+  };
+
+  return (
+    <div className="login-page">
+      <div className="login-card">
+        <div className="login-logo">
+          <span className="login-logo-icon">💊</span>
+          <h1>PillMate</h1>
+          <p>Your personal medicine companion</p>
+        </div>
+        <div className="login-tabs">
+          <div className={`login-tab ${tab==="login"?"active":""}`} onClick={()=>{setTab("login");setError("");}}>Sign In</div>
+          <div className={`login-tab ${tab==="register"?"active":""}`} onClick={()=>{setTab("register");setError("");}}>Register</div>
+        </div>
+        {error && <div className="login-error"><span>⚠️</span>{error}</div>}
+        {tab === "login" ? (
+          <>
+            <div className="login-field">
+              <label>Username</label>
+              <input className="login-input" type="text" placeholder="Enter username"
+                value={form.username} onChange={e=>set("username",e.target.value)}
+                onKeyDown={e=>e.key==="Enter"&&handleLogin()} />
+            </div>
+            <div className="login-field">
+              <label>Password</label>
+              <input className="login-input" type="password" placeholder="Enter password"
+                value={form.password} onChange={e=>set("password",e.target.value)}
+                onKeyDown={e=>e.key==="Enter"&&handleLogin()} />
+            </div>
+            <button className="login-btn" onClick={handleLogin}>Sign In →</button>
+            <div className="login-hint">Demo: <strong>demo</strong> / <strong>demo123</strong></div>
+          </>
+        ) : (
+          <>
+            <div className="login-field"><label>Full Name</label><input className="login-input" type="text" placeholder="Your name" value={form.name} onChange={e=>set("name",e.target.value)} /></div>
+            <div className="login-field"><label>Username</label><input className="login-input" type="text" placeholder="Choose username" value={form.username} onChange={e=>set("username",e.target.value)} /></div>
+            <div className="login-field"><label>Password</label><input className="login-input" type="password" placeholder="Min. 6 characters" value={form.password} onChange={e=>set("password",e.target.value)} /></div>
+            <div className="login-field"><label>Confirm Password</label><input className="login-input" type="password" placeholder="Re-enter password" value={form.confirm} onChange={e=>set("confirm",e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleRegister()} /></div>
+            <button className="login-btn" onClick={handleRegister}>Create Account →</button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── NOTIFICATIONS ── */
+function NotifToast({ notifs, dismiss }) {
+  return (
+    <div className="notif-container">
+      {notifs.map(n => (
+        <div key={n.id} className={`notif notif-${n.type||'success'} ${n.exiting?'notif-exit':''}`}>
+          <span className="notif-emoji">{n.emoji}</span>
+          <div className="notif-body">
+            <div className="notif-title">{n.title}</div>
+            <div className="notif-msg">{n.msg}</div>
+          </div>
+          <button className="notif-close" onClick={()=>dismiss(n.id)}>×</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── PROGRESS RING ── */
+function ProgressRing({ taken, total, size=80 }) {
+  const r=(size-10)/2, circ=2*Math.PI*r, pct=total===0?0:taken/total, offset=circ*(1-pct);
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#e8eef2" strokeWidth="8" />
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#4ecdc4" strokeWidth="8"
+        strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+        transform={`rotate(-90 ${size/2} ${size/2})`} style={{transition:"stroke-dashoffset .6s ease"}} />
+      <text x={size/2} y={size/2+5} textAnchor="middle" fontSize="14" fontWeight="700" fill="#2c3e50">
+        {total===0?"–":`${taken}/${total}`}
+      </text>
+    </svg>
+  );
+}
+
+/* ── DASHBOARD ── */
+function Dashboard({ medicines, onMarkTaken, notify, user }) {
+  const totalDoses = medicines.reduce((s,m)=>s+m.times.length,0);
+  const takenDoses = medicines.reduce((s,m)=>s+m.takenToday.filter(Boolean).length,0);
+  const pendingDoses = totalDoses-takenDoses;
+  const lowStock = medicines.filter(m=>m.pillsLeft<=m.refillThreshold);
+  const now = getCurrentTimeStr();
+  const nextMed = medicines.flatMap(m=>m.times.map((t,i)=>({...m,timeIdx:i,time:t,taken:m.takenToday[i]})))
+    .filter(r=>!r.taken&&r.time>=now).sort((a,b)=>a.time.localeCompare(b.time))[0];
+
+  return (
+    <div>
+      <div className="greeting-card">
+        <div className="greeting-text">
+          <h2>{getGreeting()}, {user?.name?.split(" ")[0]||"there"}!</h2>
+          <p>You have {pendingDoses} dose{pendingDoses!==1?"s":""} remaining today. Stay on track! 💪</p>
+        </div>
+      </div>
+      <div className="grid-4" style={{marginBottom:24}}>
+        {[
+          {bg:"linear-gradient(135deg,#e8f8f5,#d0f0e8)",blob:"#4ecdc4",icon:"💊",val:medicines.length,label:"Total Medicines"},
+          {bg:"linear-gradient(135deg,#e8f4fd,#d0e8f8)",blob:"#5bafd6",icon:"✅",val:takenDoses,label:"Taken Today"},
+          {bg:"linear-gradient(135deg,#fff3e8,#ffe0c4)",blob:"#f4934a",icon:"⏳",val:pendingDoses,label:"Pending Doses"},
+          {bg:"linear-gradient(135deg,#fde8f0,#fbc8da)",blob:"#e86b9f",icon:"⚠️",val:lowStock.length,label:"Low Stock"},
+        ].map((s,i)=>(
+          <div key={i} className="stat-card" style={{background:s.bg}}>
+            <div className="stat-card-blob" style={{background:s.blob}}></div>
+            <div className="stat-card-icon">{s.icon}</div>
+            <div className="stat-card-value">{s.val}</div>
+            <div className="stat-card-label">{s.label}</div>
+          </div>
+        ))}
+      </div>
+      <div className="grid-2" style={{marginBottom:24}}>
+        <div className="card">
+          <div className="section-title">📊 Today's Progress</div>
+          <div style={{display:"flex",alignItems:"center",gap:20}}>
+            <ProgressRing taken={takenDoses} total={totalDoses} size={100} />
+            <div>
+              <div style={{fontSize:14,color:"var(--text-mid)",marginBottom:8}}>
+                <span style={{color:"var(--mint-deep)",fontWeight:700}}>{takenDoses} taken</span> of {totalDoses} total
+              </div>
+              {nextMed && (
+                <div style={{background:"var(--sky)",borderRadius:10,padding:"8px 12px"}}>
+                  <div style={{fontSize:11,color:"var(--text-soft)",textTransform:"uppercase",fontWeight:700}}>Next dose</div>
+                  <div style={{fontWeight:700,color:"var(--sky-deep)",fontSize:14}}>{nextMed.name} at {formatTime(nextMed.time)}</div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="card">
+          <div className="section-title">⚡ Quick Actions</div>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {medicines.flatMap(m=>m.times.map((t,i)=>({...m,timeIdx:i,time:t,taken:m.takenToday[i]}))).filter(r=>!r.taken).slice(0,4).map((r,idx)=>(
+              <div key={idx} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",background:"var(--cream)",borderRadius:10}}>
+                <div>
+                  <div style={{fontWeight:600,fontSize:13}}>{r.name}</div>
+                  <div style={{fontSize:11,color:"var(--text-soft)"}}>{formatTime(r.time)} · {r.dosage}</div>
+                </div>
+                <button className="btn btn-solid-mint btn-sm" onClick={()=>onMarkTaken(r.id,r.timeIdx)}>✓ Take</button>
+              </div>
+            ))}
+            {takenDoses===totalDoses&&totalDoses>0&&<div style={{textAlign:"center",padding:16,color:"var(--mint-deep)",fontWeight:600}}>🎉 All doses taken!</div>}
+          </div>
+        </div>
+      </div>
+      {lowStock.length>0&&(
+        <div>
+          <div className="section-title">🚨 Low Stock Alerts</div>
+          <div className="grid-3">
+            {lowStock.map(m=>(
+              <div key={m.id} className={`alert-card ${m.pillsLeft<=3?"urgent":""}`}>
+                <div className="alert-icon">{m.pillsLeft<=3?"🆘":"⚠️"}</div>
+                <div className="alert-info">
+                  <div className="alert-name">{m.name}</div>
+                  <div className="alert-detail">{m.dosage} · {m.type}</div>
+                  <div style={{marginTop:6}}><span className={`badge badge-${m.priority.toLowerCase()}`}>{m.priority}</span></div>
+                </div>
+                <div>
+                  <div className="alert-pills" style={{color:m.pillsLeft<=3?"#e53e3e":"#f97316"}}>{m.pillsLeft}</div>
+                  <div className="alert-pills-label">pills left</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── MEDICINE LIST ── */
+function MedicineList({ medicines, onMarkTaken, onDelete, notify }) {
+  const [search, setSearch] = useState("");
+  const filtered = medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())||m.type.toLowerCase().includes(search.toLowerCase()));
+  return (
+    <div>
+      <div style={{display:"flex",gap:12,marginBottom:20,alignItems:"center"}}>
+        <div style={{flex:1,position:"relative"}}>
+          <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",fontSize:16}}>🔍</span>
+          <input className="form-input" style={{paddingLeft:38}} placeholder="Search medicines…" value={search} onChange={e=>setSearch(e.target.value)} />
+        </div>
+        <div style={{fontSize:13,color:"var(--text-soft)",whiteSpace:"nowrap"}}>{filtered.length} medicines</div>
+      </div>
+      {filtered.length===0?<div className="empty-state"><div className="empty-state-icon">💊</div><p>No medicines found</p></div>:(
+        <div className="grid-3">
+          {filtered.map(m=>{
+            const pct=Math.min(100,Math.round((m.pillsLeft/Math.max(m.pillsLeft+m.refillThreshold,30))*100));
+            const nextPending=m.times.findIndex((_,i)=>!m.takenToday[i]);
+            const lowStock=m.pillsLeft<=m.refillThreshold;
+            return (
+              <div key={m.id} className="med-card">
+                <div className="med-card-accent" style={{background:m.color}}></div>
+                <div className="med-card-header">
+                  <div><div className="med-card-name">{m.name}</div><div className="med-card-type">{m.type}</div></div>
+                  <span className={`badge badge-${m.priority.toLowerCase()}`}>{m.priority}</span>
+                </div>
+                <div className="med-info-row">
+                  <span className="med-info-chip">💊 {m.dosage}</span>
+                  <span className="med-info-chip">🔁 {m.frequency}</span>
+                  {lowStock&&<span className="med-info-chip" style={{background:"#fde8e8",color:"#e53e3e"}}>⚠ Low</span>}
+                </div>
+                <div className="med-times">
+                  {m.times.map((t,i)=><span key={i} className="time-chip" style={m.takenToday[i]?{background:"var(--mint)",color:"var(--mint-deep)"}:{}}>{m.takenToday[i]?"✓":"⏰"} {formatTime(t)}</span>)}
+                </div>
+                <div className="pill-bar-wrap">
+                  <div className="pill-bar-label"><span>Pills remaining</span><span style={{fontWeight:700,color:lowStock?"#e53e3e":"var(--text-dark)"}}>{m.pillsLeft}</span></div>
+                  <div className="pill-bar-bg"><div className="pill-bar-fill" style={{width:pct+"%",background:getPillBarColor(m.pillsLeft,m.refillThreshold)}}></div></div>
+                </div>
+                <div className="med-card-actions">
+                  {nextPending>=0&&<button className="btn btn-solid-mint btn-sm" onClick={()=>onMarkTaken(m.id,nextPending)}>✓ Mark Taken</button>}
+                  <button className="btn btn-ghost btn-sm" style={{marginLeft:"auto"}} onClick={()=>{if(window.confirm(`Delete ${m.name}?`))onDelete(m.id);}}>🗑</button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── ADD MEDICINE ── */
+function AddMedicine({ onAdd, notify }) {
+  const [form, setForm] = useState({ name:"", type:"Tablet", dosage:"", frequency:"Once daily", times:["08:00"], pillsLeft:"30", refillThreshold:"10", priority:"Medium", color:"#4ecdc4" });
+  const COLORS=["#4ecdc4","#5bafd6","#e86b9f","#f4934a","#7bc67e","#a78bfa","#f7c59f","#84c1b0"];
+  const FREQUENCIES=["Once daily","Twice daily","Three times daily","Four times daily","Every 8 hours","As needed","Weekly"];
+  const TYPES=["Tablet","Capsule","Softgel","Syrup","Injection","Drops","Inhaler","Patch","Powder","Other"];
+  const PRIORITIES=["Low","Medium","High","Critical"];
+  const set=(k,v)=>setForm(f=>({...f,[k]:v}));
+  const setTime=(i,v)=>{const t=[...form.times];t[i]=v;set("times",t);};
+  const addTime=()=>form.times.length<5&&set("times",[...form.times,"12:00"]);
+  const removeTime=i=>form.times.length>1&&set("times",form.times.filter((_,j)=>j!==i));
+  const handleSubmit=()=>{
+    if(!form.name.trim()||!form.dosage.trim()){notify({emoji:"⚠️",title:"Missing Fields",msg:"Please fill in name and dosage.",type:"warning"});return;}
+    const med={id:Date.now(),name:form.name.trim(),type:form.type,dosage:form.dosage.trim(),frequency:form.frequency,times:form.times,pillsLeft:parseInt(form.pillsLeft)||0,refillThreshold:parseInt(form.refillThreshold)||10,priority:form.priority,color:form.color,takenToday:form.times.map(()=>false),addedDate:new Date().toISOString().split("T")[0]};
+    onAdd(med);
+    notify({emoji:"💊",title:"Medicine Added",msg:`${med.name} added successfully!`,type:"success"});
+    setForm({name:"",type:"Tablet",dosage:"",frequency:"Once daily",times:["08:00"],pillsLeft:"30",refillThreshold:"10",priority:"Medium",color:"#4ecdc4"});
+  };
+  return (
+    <div style={{maxWidth:640}}>
+      <div className="card">
+        <div className="form-row">
+          <div className="form-group"><label className="form-label">Medicine Name *</label><input className="form-input" placeholder="e.g. Paracetamol" value={form.name} onChange={e=>set("name",e.target.value)} /></div>
+          <div className="form-group"><label className="form-label">Type</label><select className="form-input" value={form.type} onChange={e=>set("type",e.target.value)}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
+        </div>
+        <div className="form-row">
+          <div className="form-group"><label className="form-label">Dosage *</label><input className="form-input" placeholder="e.g. 500mg" value={form.dosage} onChange={e=>set("dosage",e.target.value)} /></div>
+          <div className="form-group"><label className="form-label">Frequency</label><select className="form-input" value={form.frequency} onChange={e=>set("frequency",e.target.value)}>{FREQUENCIES.map(f=><option key={f}>{f}</option>)}</select></div>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Reminder Times</label>
+          {form.times.map((t,i)=>(
+            <div key={i} style={{display:"flex",gap:8,marginBottom:8}}>
+              <input type="time" className="form-input" value={t} onChange={e=>setTime(i,e.target.value)} style={{flex:1}} />
+              {form.times.length>1&&<button className="btn-icon" onClick={()=>removeTime(i)}>✕</button>}
+            </div>
+          ))}
+          {form.times.length<5&&<button className="btn btn-ghost btn-sm" onClick={addTime}>+ Add Time</button>}
+        </div>
+        <div className="form-row">
+          <div className="form-group"><label className="form-label">Pills in Stock</label><input type="number" className="form-input" value={form.pillsLeft} onChange={e=>set("pillsLeft",e.target.value)} min="0" /></div>
+          <div className="form-group"><label className="form-label">Refill Threshold</label><input type="number" className="form-input" value={form.refillThreshold} onChange={e=>set("refillThreshold",e.target.value)} min="1" /></div>
+        </div>
+        <div className="form-row">
+          <div className="form-group"><label className="form-label">Priority</label><select className="form-input" value={form.priority} onChange={e=>set("priority",e.target.value)}>{PRIORITIES.map(p=><option key={p}>{p}</option>)}</select></div>
+          <div className="form-group">
+            <label className="form-label">Color Tag</label>
+            <div style={{display:"flex",gap:8,marginTop:4}}>
+              {COLORS.map(c=><div key={c} onClick={()=>set("color",c)} style={{width:28,height:28,borderRadius:"50%",background:c,cursor:"pointer",border:form.color===c?"3px solid #2c3e50":"3px solid transparent",transition:"all .2s"}} />)}
+            </div>
+          </div>
+        </div>
+        <button className="btn btn-solid-mint" style={{width:"100%",padding:14,fontSize:15}} onClick={handleSubmit}>💊 Add Medicine</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── TIMELINE ── */
+function ReminderTimeline({ medicines, onMarkTaken }) {
+  const slots=["Morning","Afternoon","Night"];
+  const slotConfig={Morning:{bg:"#fffbeb",color:"#d69e2e",icon:"🌅"},Afternoon:{bg:"#e8f4fd",color:"#3182ce",icon:"☀️"},Night:{bg:"#f0ebff",color:"#7c5cbf",icon:"🌙"}};
+  const grouped={};
+  slots.forEach(s=>grouped[s]=[]);
+  medicines.forEach(m=>m.times.forEach((t,i)=>{const slot=getTimeSlot(t);grouped[slot].push({...m,timeIdx:i,time:t,taken:m.takenToday[i],passed:isTimePassed(t)});}));
+  slots.forEach(s=>grouped[s].sort((a,b)=>a.time.localeCompare(b.time)));
+  return (
+    <div>
+      {slots.map(slot=>{
+        const items=grouped[slot];
+        if(!items.length)return null;
+        const cfg=slotConfig[slot];
+        return (
+          <div key={slot} className="timeline-section">
+            <div className="timeline-header" style={{background:cfg.bg,color:cfg.color}}>
+              <span>{cfg.icon}</span>{slot}
+              <span style={{marginLeft:"auto",fontSize:12,fontWeight:400,opacity:.7}}>{items.filter(i=>i.taken).length}/{items.length} taken</span>
+            </div>
+            {items.map((item,idx)=>{
+              const status=item.taken?"taken":item.passed?"missed":"pending";
+              return (
+                <div key={idx} className="timeline-item">
+                  <div className="timeline-dot" style={{background:item.color}}></div>
+                  <div className="timeline-info"><div className="timeline-name">{item.name}</div><div className="timeline-detail">{item.dosage} · {item.type}</div></div>
+                  <div className="timeline-time">{formatTime(item.time)}</div>
+                  <span className={`status-badge status-${status}`}>{status==="taken"?"✓ Taken":status==="missed"?"✗ Missed":"● Pending"}</span>
+                  {status==="pending"&&<button className="btn btn-solid-mint btn-sm" onClick={()=>onMarkTaken(item.id,item.timeIdx)}>Take</button>}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── REFILL ALERTS ── */
+function RefillAlerts({ medicines }) {
+  const low=medicines.filter(m=>m.pillsLeft<=m.refillThreshold).sort((a,b)=>a.pillsLeft-b.pillsLeft);
+  const urgent=low.filter(m=>m.pillsLeft<=3), normal=low.filter(m=>m.pillsLeft>3);
+  const Section=({title,items})=>items.length===0?null:(
+    <div style={{marginBottom:20}}>
+      <div className="section-title">{title}</div>
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        {items.map(m=>{
+          const pct=Math.min(100,Math.round((m.pillsLeft/m.refillThreshold)*100));
+          return (
+            <div key={m.id} className={`alert-card ${m.pillsLeft<=3?"urgent":""}`}>
+              <div className="alert-icon">{m.pillsLeft<=3?"🆘":"⚠️"}</div>
+              <div className="alert-info">
+                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+                  <div className="alert-name">{m.name}</div>
+                  <span className={`badge badge-${m.priority.toLowerCase()}`}>{m.priority}</span>
+                </div>
+                <div className="alert-detail">{m.dosage} · {m.type} · {m.frequency}</div>
+                <div className="pill-bar-wrap" style={{marginTop:8}}>
+                  <div className="pill-bar-label"><span>Stock level</span><span style={{color:m.pillsLeft<=3?"#e53e3e":"#f97316"}}>{m.pillsLeft} pills left (threshold: {m.refillThreshold})</span></div>
+                  <div className="pill-bar-bg"><div className="pill-bar-fill" style={{width:Math.max(pct,3)+"%",background:getPillBarColor(m.pillsLeft,m.refillThreshold)}}></div></div>
+                </div>
+              </div>
+              <div style={{textAlign:"center",paddingLeft:12}}>
+                <div className="alert-pills" style={{color:m.pillsLeft<=3?"#e53e3e":"#f97316"}}>{m.pillsLeft}</div>
+                <div className="alert-pills-label">pills</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+  return low.length===0?(
+    <div className="card"><div className="empty-state"><div className="empty-state-icon">✅</div><p style={{fontWeight:600,color:"var(--mint-deep)",fontSize:16}}>All medicines are well-stocked!</p></div></div>
+  ):(
+    <div>
+      <div style={{background:"var(--blush)",borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",gap:12,alignItems:"center"}}>
+        <span style={{fontSize:20}}>⚠️</span>
+        <div><div style={{fontWeight:700,color:"var(--blush-deep)"}}>{low.length} medicine{low.length>1?"s":""} need refill</div><div style={{fontSize:13,color:"var(--text-mid)"}}>Please restock soon</div></div>
+      </div>
+      <Section title="🆘 Urgent – Critically Low (≤3 pills)" items={urgent} />
+      <Section title="⚠️ Low Stock – Needs Refill Soon" items={normal} />
+    </div>
+  );
+}
+
+/* ── HEALTH ASSESSMENT ── */
+function HealthAssessment({ medicines, notify, onComplete }) {
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState({ age:"", gender:"", conditions:[], symptoms:[], lifestyle:[], allergies:"" });
+  const CONDITIONS=[{label:"Diabetes",emoji:"🩸"},{label:"Hypertension",emoji:"❤️"},{label:"Heart Disease",emoji:"🫀"},{label:"Asthma",emoji:"🫁"},{label:"Thyroid",emoji:"🦋"},{label:"Arthritis",emoji:"🦴"},{label:"Kidney Disease",emoji:"🫘"},{label:"Liver Disease",emoji:"🟤"},{label:"Depression/Anxiety",emoji:"🧠"},{label:"None",emoji:"✅"}];
+  const SYMPTOMS=[{label:"Headache",emoji:"🤕"},{label:"Fatigue",emoji:"😴"},{label:"Nausea",emoji:"🤢"},{label:"Chest Pain",emoji:"💔"},{label:"Dizziness",emoji:"💫"},{label:"Shortness of Breath",emoji:"😮‍💨"},{label:"Joint Pain",emoji:"🦵"},{label:"Insomnia",emoji:"🌙"},{label:"None currently",emoji:"👍"}];
+  const LIFESTYLE=[{label:"Smoker",emoji:"🚬"},{label:"Alcohol",emoji:"🍺"},{label:"Sedentary",emoji:"🛋️"},{label:"Active/Exercise",emoji:"🏃"},{label:"Vegetarian",emoji:"🥗"},{label:"Diabetic Diet",emoji:"🥦"}];
+  const toggle=(field,val)=>setAnswers(prev=>{const arr=prev[field];return {...prev,[field]:arr.includes(val)?arr.filter(x=>x!==val):[...arr,val]};});
+
+  const STEPS=[
+    { title:"👤 Basic Information", subtitle:"Tell us a bit about yourself",
+      content:(
+        <div className="form-row">
+          <div className="form-group"><label className="form-label">Your Age</label><input className="form-input" type="number" placeholder="e.g. 35" min="1" max="120" value={answers.age} onChange={e=>setAnswers(p=>({...p,age:e.target.value}))} /></div>
+          <div className="form-group"><label className="form-label">Gender</label><select className="form-input" value={answers.gender} onChange={e=>setAnswers(p=>({...p,gender:e.target.value}))}><option value="">Select…</option><option>Male</option><option>Female</option><option>Non-binary</option><option>Prefer not to say</option></select></div>
+        </div>
+      )
+    },
+    { title:"🏥 Health Conditions", subtitle:"Select any existing health conditions",
+      content:(
+        <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+          {CONDITIONS.map(c=>(
+            <div key={c.label} className={`health-option ${answers.conditions.includes(c.label)?"selected":""}`} style={{width:"calc(50% - 4px)",minWidth:140}} onClick={()=>toggle("conditions",c.label)}>
+              <span className="health-option-emoji">{c.emoji}</span><span style={{fontSize:14}}>{c.label}</span>
+              {answers.conditions.includes(c.label)&&<span style={{marginLeft:"auto"}}>✓</span>}
+            </div>
+          ))}
+        </div>
+      )
+    },
+    { title:"🤒 Current Symptoms", subtitle:"Any symptoms you're experiencing now?",
+      content:(
+        <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+          {SYMPTOMS.map(s=>(
+            <div key={s.label} className={`health-option ${answers.symptoms.includes(s.label)?"selected":""}`} style={{width:"calc(50% - 4px)",minWidth:140}} onClick={()=>toggle("symptoms",s.label)}>
+              <span className="health-option-emoji">{s.emoji}</span><span style={{fontSize:14}}>{s.label}</span>
+              {answers.symptoms.includes(s.label)&&<span style={{marginLeft:"auto"}}>✓</span>}
+            </div>
+          ))}
+        </div>
+      )
+    },
+    { title:"🌿 Lifestyle & Allergies", subtitle:"Help us understand your lifestyle",
+      content:(
+        <div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:20}}>
+            {LIFESTYLE.map(l=>(
+              <div key={l.label} className={`health-option ${answers.lifestyle.includes(l.label)?"selected":""}`} style={{width:"calc(50% - 4px)",minWidth:140}} onClick={()=>toggle("lifestyle",l.label)}>
+                <span className="health-option-emoji">{l.emoji}</span><span style={{fontSize:14}}>{l.label}</span>
+                {answers.lifestyle.includes(l.label)&&<span style={{marginLeft:"auto"}}>✓</span>}
+              </div>
+            ))}
+          </div>
+          <div className="form-group"><label className="form-label">Known Allergies (optional)</label><input className="form-input" placeholder="e.g. Penicillin, Sulfa drugs…" value={answers.allergies} onChange={e=>setAnswers(p=>({...p,allergies:e.target.value}))} /></div>
+        </div>
+      )
+    }
+  ];
+
+  return (
+    <div className="health-page">
+      <div className="progress-steps">
+        {STEPS.map((_,i)=><div key={i} className={`step-dot ${i<=step?"done":""}`}></div>)}
+      </div>
+      <div className="card health-step" key={step}>
+        <div style={{marginBottom:20}}>
+          <h3 style={{fontSize:18,fontWeight:700,color:"var(--text-dark)"}}>{STEPS[step].title}</h3>
+          <p style={{fontSize:13,color:"var(--text-soft)",marginTop:4}}>{STEPS[step].subtitle}</p>
+        </div>
+        {STEPS[step].content}
+        <div style={{display:"flex",gap:10,marginTop:24,justifyContent:"space-between"}}>
+          {step>0?<button className="btn btn-ghost" onClick={()=>setStep(s=>s-1)}>← Back</button>:<div></div>}
+          {step<STEPS.length-1
+            ?<button className="btn btn-solid-mint" onClick={()=>setStep(s=>s+1)}>Next →</button>
+            :<button className="btn btn-solid-lav" onClick={()=>{notify({emoji:"✅",title:"Health Profile Saved!",msg:"Assessment complete.",type:"success"});onComplete(answers);}}>✓ Complete Assessment</button>
+          }
+        </div>
+      </div>
+      {step===STEPS.length-1&&(answers.conditions.length>0||answers.age)&&(
+        <div className="card" style={{marginTop:16,background:"var(--lavender)",border:"1px solid var(--lav-mid)"}}>
+          <div style={{fontWeight:700,color:"var(--lav-deep)",marginBottom:12}}>📊 Your Health Summary</div>
+          {answers.age&&<div style={{fontSize:13,marginBottom:6}}>🧑 Age: <strong>{answers.age}</strong>{answers.gender?` · ${answers.gender}`:""}</div>}
+          {answers.conditions.length>0&&<div style={{fontSize:13,marginBottom:6}}>🏥 Conditions: <strong>{answers.conditions.join(", ")}</strong></div>}
+          {answers.symptoms.length>0&&<div style={{fontSize:13,marginBottom:6}}>🤒 Symptoms: <strong>{answers.symptoms.join(", ")}</strong></div>}
+          {answers.lifestyle.length>0&&<div style={{fontSize:13,marginBottom:6}}>🌿 Lifestyle: <strong>{answers.lifestyle.join(", ")}</strong></div>}
+          {answers.allergies&&<div style={{fontSize:13,color:"#e53e3e"}}>⚠️ Allergies: <strong>{answers.allergies}</strong></div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── AI MEDICINE INFO ── */
+function AIMedicineInfo({ medicines, healthProfile, user }) {
+  const firstName = user?.name?.split(" ")[0] || "there";
+  const [messages, setMessages] = useState([{
+    role:"bot",
+    text:`👋 Hi ${firstName}! I'm your PillMate AI assistant. I can help you with:\n\n• 💊 Medicine information & side effects\n• ⚠️ Drug interaction warnings\n• 📋 Dosage & timing guidance\n• 🏥 General health questions based on your profile\n\nAsk me anything about your medicines or health!`
+  }]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const endRef = useRef(null);
+
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages]);
+
+  const medNames = medicines.map(m=>`${m.name} (${m.dosage})`).join(", ");
+  const profileSummary = healthProfile
+    ? `Patient profile — age: ${healthProfile.age||"unknown"}, gender: ${healthProfile.gender||"unknown"}, conditions: ${healthProfile.conditions?.join(",")||"none"}, current symptoms: ${healthProfile.symptoms?.join(",")||"none"}, lifestyle: ${healthProfile.lifestyle?.join(",")||"none"}, known allergies: ${healthProfile.allergies||"none"}.`
+    : "No health profile has been filled yet.";
+
+  const systemPrompt = `You are PillMate's AI health assistant — a knowledgeable, friendly assistant specializing in medication information and general health guidance.
+
+Patient's current medicines: ${medNames || "none listed"}.
+${profileSummary}
+
+Guidelines:
+- Be concise, warm, and easy to understand
+- Use bullet points for lists of side effects, interactions, etc.
+- Reference the patient's specific medicines and health conditions when relevant
+- Always include a brief disclaimer to consult a doctor for personal medical decisions
+- Flag any dangerous drug interactions clearly with ⚠️
+- Do not diagnose conditions`;
+
+  const QUICK_QS = [
+    "What are side effects of Paracetamol?",
+    "Can I take Aspirin with Metformin?",
+    "What is Lisinopril for?",
+    "Best time to take Vitamin D3?",
+    "How does Metformin work?",
+  ];
+
+  const sendMessage = async (text) => {
+    const q = text || input.trim();
+    if (!q || loading) return;
+    setInput("");
+    const newMsg = { role:"user", text: q };
+    setMessages(prev => [...prev, newMsg]);
+    setLoading(true);
+
+    const history = [...messages, newMsg].map(m => ({ role: m.role==="bot"?"assistant":"user", content: m.text }));
+
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:1000, system:systemPrompt, messages:history })
+      });
+      const data = await res.json();
+      const reply = data.content?.map(b=>b.text||"").join("") || "Sorry, I couldn't respond. Please try again.";
+      setMessages(prev => [...prev, { role:"bot", text: reply }]);
+    } catch(e) {
+      setMessages(prev => [...prev, { role:"bot", text:"⚠️ Connection error. Please try again." }]);
+    }
+    setLoading(false);
+  };
+
+  const initials = user?.name?.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2)||"U";
+
+  return (
+    <div className="ai-page">
+      <div className="quick-q-chips">
+        {QUICK_QS.map((q,i)=><button key={i} className="quick-q" onClick={()=>sendMessage(q)}>{q}</button>)}
+      </div>
+      <div className="ai-messages">
+        {messages.map((m,i)=>(
+          <div key={i} className={`ai-msg ${m.role}`}>
+            {m.role==="bot"?<div className="ai-avatar">🤖</div>:<div className="ai-user-avatar">{initials}</div>}
+            <div className="ai-bubble" style={{whiteSpace:"pre-wrap"}}>{m.text}</div>
+          </div>
+        ))}
+        {loading&&(
+          <div className="ai-msg bot">
+            <div className="ai-avatar">🤖</div>
+            <div className="ai-bubble" style={{padding:"8px 16px"}}>
+              <div className="ai-typing"><span></span><span></span><span></span></div>
+            </div>
+          </div>
+        )}
+        <div ref={endRef} />
+      </div>
+      <div className="ai-input-row">
+        <textarea className="ai-input" placeholder="Ask about medicines, side effects, interactions…"
+          value={input} onChange={e=>setInput(e.target.value)}
+          onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}}} rows={1} />
+        <button className="ai-send-btn" onClick={()=>sendMessage()} disabled={!input.trim()||loading}>➤</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── MAIN APP ── */
+function App() {
+  const [user, setUser] = useState(null);
+  const [page, setPage] = useState("dashboard");
+  const [medicines, setMedicines] = useState(INITIAL_MEDICINES);
+  const [notifs, setNotifs] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [clock, setClock] = useState(new Date());
+  const [healthProfile, setHealthProfile] = useState(null);
+  const notifId = useRef(0);
+  const shownRef = useRef(new Set());
+
+  useEffect(()=>{ const t=setInterval(()=>setClock(new Date()),1000); return()=>clearInterval(t); },[]);
+
+  const notify = useCallback((n) => {
+    const id = ++notifId.current;
+    setNotifs(prev=>[...prev,{...n,id}]);
+    playSound(n.type||'success');
+    setTimeout(()=>{
+      setNotifs(prev=>prev.map(x=>x.id===id?{...x,exiting:true}:x));
+      setTimeout(()=>setNotifs(prev=>prev.filter(x=>x.id!==id)),350);
+    },5000);
+  },[]);
+
+  const dismiss = useCallback((id)=>{
+    setNotifs(prev=>prev.map(x=>x.id===id?{...x,exiting:true}:x));
+    setTimeout(()=>setNotifs(prev=>prev.filter(x=>x.id!==id)),350);
+  },[]);
+
+  useEffect(()=>{
+    if(!user)return;
+    const check=()=>{
+      medicines.forEach(m=>{
+        m.times.forEach((t,i)=>{
+          const key=`${m.id}-${i}-${t}`;
+          if(isTimeSoon(t,1)&&!m.takenToday[i]&&!shownRef.current.has(key)){shownRef.current.add(key);notify({emoji:"⏰",title:"Time for your medicine!",msg:`Take ${m.name} ${m.dosage} now`,type:"info"});}
+          const missKey=`miss-${m.id}-${i}`;
+          if(isTimePassed(t)&&!m.takenToday[i]&&!shownRef.current.has(missKey)){shownRef.current.add(missKey);notify({emoji:"❌",title:"Missed dose!",msg:`You missed ${m.name} at ${formatTime(t)}`,type:"danger"});}
+        });
+        const refillKey=`refill-${m.id}`;
+        if(m.pillsLeft<=m.refillThreshold&&!shownRef.current.has(refillKey)){shownRef.current.add(refillKey);notify({emoji:"⚠️",title:"Low Stock Alert",msg:`Only ${m.pillsLeft} ${m.name} pills left!`,type:"warning"});}
+      });
+    };
+    check(); const t=setInterval(check,30000); return()=>clearInterval(t);
+  },[medicines,notify,user]);
+
+  useEffect(()=>{
+    if(!user)return;
+    setTimeout(()=>notify({emoji:"🌸",title:`Welcome back, ${user.name.split(" ")[0]}!`,msg:"Your medicine reminders are active.",type:"success"}),600);
+    setTimeout(()=>{
+      const low=INITIAL_MEDICINES.filter(m=>m.pillsLeft<=m.refillThreshold);
+      if(low.length)notify({emoji:"⚠️",title:`${low.length} medicines need refill`,msg:low.map(m=>m.name).join(", "),type:"warning"});
+    },2200);
+  },[user]);
+
+  const markAsTaken = useCallback((medId, timeIdx)=>{
+    setMedicines(prev=>prev.map(m=>{
+      if(m.id!==medId)return m;
+      const taken=[...m.takenToday]; taken[timeIdx]=true;
+      const newPills=Math.max(0,m.pillsLeft-1);
+      notify({emoji:"✅",title:"Dose recorded!",msg:`${m.name} ${m.dosage} marked as taken`,type:"success"});
+      if(newPills<=m.refillThreshold)setTimeout(()=>notify({emoji:"⚠️",title:"Low stock!",msg:`Only ${newPills} ${m.name} pills left`,type:"warning"}),500);
+      return{...m,takenToday:taken,pillsLeft:newPills};
+    }));
+  },[notify]);
+
+  const addMedicine = useCallback((med)=>{ setMedicines(prev=>[...prev,med]); setPage("medicines"); },[]);
+  const deleteMedicine = useCallback((id)=>{
+    setMedicines(prev=>{const m=prev.find(x=>x.id===id);if(m)notify({emoji:"🗑️",title:"Medicine removed",msg:`${m.name} deleted`,type:"info"});return prev.filter(x=>x.id!==id);});
+  },[notify]);
+
+  const handleLogin=(userData)=>{ setUser(userData); shownRef.current=new Set(); };
+  const handleLogout=()=>{ setUser(null); setPage("dashboard"); setNotifs([]); shownRef.current=new Set(); };
+
+  if(!user) return <LoginPage onLogin={handleLogin} />;
+
+  const nav=[
+    {id:"dashboard",label:"Dashboard",icon:"🏠"},
+    {id:"medicines",label:"Medicine List",icon:"💊"},
+    {id:"add",label:"Add Medicine",icon:"➕"},
+    {id:"timeline",label:"Reminder Timeline",icon:"📅"},
+    {id:"alerts",label:"Refill Alerts",icon:"🚨"},
+    {id:"health",label:"Health Profile",icon:"❤️"},
+    {id:"aiinfo",label:"AI Medicine Info",icon:"🤖"},
+  ];
+  const pageTitles={
+    dashboard:{h:"Dashboard",sub:"Here's your health overview for today"},
+    medicines:{h:"Medicine List",sub:"All your medicines at a glance"},
+    add:{h:"Add Medicine",sub:"Add a new medicine to your tracker"},
+    timeline:{h:"Reminder Timeline",sub:"Today's medication schedule"},
+    alerts:{h:"Refill Alerts",sub:"Medicines that need restocking"},
+    health:{h:"Health Assessment",sub:"Tell us about your health so we can help better"},
+    aiinfo:{h:"AI Medicine Info",sub:"Ask questions about medicines & your health"},
+  };
+  const lowStockCount=medicines.filter(m=>m.pillsLeft<=m.refillThreshold).length;
+  const h=clock.getHours(), m=clock.getMinutes();
+  const timeStr=`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+  const dateStr=clock.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+  const initials=user.name.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2);
+
+  return (
+    <>
+      <NotifToast notifs={notifs} dismiss={dismiss} />
+      <button className="hamburger" onClick={()=>setSidebarOpen(s=>!s)}>☰</button>
+      <div className={`sidebar-overlay ${sidebarOpen?"open":""}`} onClick={()=>setSidebarOpen(false)}></div>
+      <div className="app-shell">
+        <nav className={`sidebar ${sidebarOpen?"open":""}`}>
+          <div className="sidebar-logo">
+            <h1><span>💊</span>PillMate</h1>
+            <p>Medicine Reminder</p>
+          </div>
+          {nav.map(n=>(
+            <div key={n.id} className={`nav-item ${page===n.id?"active":""}`} onClick={()=>{setPage(n.id);setSidebarOpen(false);}}>
+              <span className="nav-icon">{n.icon}</span>
+              {n.label}
+              {n.id==="alerts"&&lowStockCount>0&&<span style={{marginLeft:"auto",background:"#e53e3e",color:"white",borderRadius:10,fontSize:10,fontWeight:700,padding:"2px 7px"}}>{lowStockCount}</span>}
+              {n.id==="health"&&healthProfile&&<span style={{marginLeft:"auto",background:"var(--mint-deep)",color:"white",borderRadius:10,fontSize:10,fontWeight:700,padding:"2px 7px"}}>✓</span>}
+            </div>
+          ))}
+          <div className="sidebar-bottom">
+            <div className="sidebar-user">
+              <div className="sidebar-avatar">{initials}</div>
+              <div><div className="sidebar-username">{user.name}</div><button className="sidebar-logout" onClick={handleLogout}>Sign out</button></div>
+            </div>
+            <div className="sidebar-time">{timeStr}</div>
+            <div className="sidebar-date">{dateStr}</div>
+          </div>
+        </nav>
+        <main className="main-content">
+          <div className="page-header">
+            <h2>{pageTitles[page]?.h}</h2>
+            <p>{pageTitles[page]?.sub}</p>
+          </div>
+          {page==="dashboard" &&<Dashboard medicines={medicines} onMarkTaken={markAsTaken} notify={notify} user={user} />}
+          {page==="medicines" &&<MedicineList medicines={medicines} onMarkTaken={markAsTaken} onDelete={deleteMedicine} notify={notify} />}
+          {page==="add"       &&<AddMedicine onAdd={addMedicine} notify={notify} />}
+          {page==="timeline"  &&<ReminderTimeline medicines={medicines} onMarkTaken={markAsTaken} />}
+          {page==="alerts"    &&<RefillAlerts medicines={medicines} />}
+          {page==="health"    &&<HealthAssessment medicines={medicines} notify={notify} onComplete={(p)=>{setHealthProfile(p);setPage("aiinfo");}} />}
+          {page==="aiinfo"    &&<AIMedicineInfo medicines={medicines} healthProfile={healthProfile} user={user} />}
+        </main>
+      </div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
